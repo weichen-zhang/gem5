@@ -416,7 +416,7 @@ action(Initiate_Replacement, desc="") {
 
   // UD_RU line needs to be written back because the upstream may be in UC state.
   if (initial == State:UD_RU) {
-    tbe.dataBlk := cache_entry.DataBlk;
+    tbe.dataBlk.copyPartial(cache_entry.DataBlk,cache_entry.writeMask);
     tbe.dataBlkValid.fillMask();
   }
 
@@ -3624,7 +3624,7 @@ action(Callback_StoreHit, desc="") {
   if (tbe.is_local_pf == false) {
     assert(tbe.dataValid);
     DPRINTF(RubySlicc, "Write before %s\n", tbe.dataBlk);
-    sequencer.writeCallback(tbe.addr, tbe.dataBlk, false);
+    coalesce.writeCallback(tbe.addr, tbe.dataBlk, false);
     DPRINTF(RubySlicc, "Write after %s\n", tbe.dataBlk);
     tbe.dataDirty := true;
   }
@@ -3672,21 +3672,12 @@ action(Callback_Miss, desc="") {
 
   } else if (tbe.dataValid && (tbe.reqType == CHIRequestType:Load)) {
     DPRINTF(RubySlicc, "Read data %s\n", tbe.dataBlk);
-<<<<<<< Updated upstream
     coalescer.readCallback(tbe.addr, tbe.dataBlk, true);
-=======
-    coalesce.readCallback(tbe.addr, tbe.dataBlk, true);
->>>>>>> Stashed changes
 
   } else if (tbe.dataValid && ((tbe.reqType == CHIRequestType:Store) ||
                                (tbe.reqType == CHIRequestType:StoreLine))) {
     DPRINTF(RubySlicc, "Write before %s\n", tbe.dataBlk);
-<<<<<<< Updated upstream
-    coalescer.writeCallback(tbe.addr, tbe.dataBlk, true);
-=======
-    tbe.dataBlk.writeMask.orMask()
     coalesce.writeCallback(tbe.addr, tbe.dataBlk, true);
->>>>>>> Stashed changes
     DPRINTF(RubySlicc, "Write after %s\n", tbe.dataBlk);
     tbe.dataDirty := true;
 
@@ -3761,12 +3752,7 @@ action(Callback_WriteUnique, desc="") {
   assert((tbe.reqType == CHIRequestType:StoreLine) ||
          (tbe.reqType == CHIRequestType:Store));
   assert(tbe.dataValid == false);
-<<<<<<< Updated upstream
-  coalescer.writeCallback(tbe.addr,MachineType:L1Cache, tbe.dataBlk);
-=======
-  tbe.dataBlk.orMask()
   coalesce.writeUniqueCallback(tbe.addr, tbe.dataBlk);
->>>>>>> Stashed changes
   DPRINTF(RubySlicc, "WriteUnique data %s\n", tbe.dataBlk);
   // set mask; note data is never considered valid
   assert(tbe.dataBlkValid.isEmpty());

@@ -44,7 +44,7 @@ class DummySystem:
 
 class Disjoint_VIPER(RubySystem):
     def __init__(self):
-        if buildEnv["PROTOCOL"] != "GPU_VIPER":
+        if buildEnv["PROTOCOL"] != "CHI":
             fatal("This ruby config only supports the GPU_VIPER protocol")
 
         super().__init__()
