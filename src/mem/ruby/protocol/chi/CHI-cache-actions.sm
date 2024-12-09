@@ -149,8 +149,16 @@ action(AllocateTBE_SeqRequest, desc="") {
       out_msg.txnId := max_outstanding_transactions;
       out_msg.ns := !in_msg.isSecure;
 
+      if(RubyRequestType:ST){
+      out_msg.DataBlk.copyPartial(in_msg.WTData,in_msg.writeMask);
+      out_msg.writeMask.orMask(in_msg.writeMask);
+      }
+
       out_msg.atomic_op.clear();
       out_msg.atomic_op.orMask(in_msg.writeMask);
+
+  
+      
 
       if ((in_msg.Type == RubyRequestType:LD) ||
           (in_msg.Type == RubyRequestType:IFETCH)) {
@@ -238,6 +246,8 @@ action(AllocateTBE_PfRequest, desc="Allocate TBE for prefetch request") {
       out_msg.is_local_pf := true;
       out_msg.is_remote_pf := false;
       out_msg.txnId := max_outstanding_transactions;
+      out_msg.
+      out_msg.writeMask=in_msg.writeMask;
 
       if (in_msg.Type == RubyRequestType:LD) {
         out_msg.type := CHIRequestType:Load;
@@ -258,6 +268,8 @@ action(Initiate_Request, desc="") {
     set_tbe(allocateRequestTBE(address, in_msg));
     // only a msg that was already retried doesn't allow a retry
     was_retried := in_msg.allowRetry == false;
+    tbe.writeMask=in_msg.writeMask;
+    tbe.dataBlk=in_msg.dataBlk;
   }
   DirEntry dir_entry := getDirEntry(address);
   copyCacheAndDir(cache_entry, dir_entry, tbe, initial);
@@ -2129,6 +2141,7 @@ action(Receive_ReqDataResp, desc="") {
   assert(is_valid(tbe));
   assert(tbe.expected_req_resp.hasExpected());
   peek(datInPort, CHIDataMsg) {
+   
     // Decrement pending
     if (tbe.expected_req_resp.receiveData(in_msg.type) == false) {
       error("Received unexpected message");
@@ -3658,12 +3671,12 @@ action(Callback_Miss, desc="") {
 
   } else if (tbe.dataValid && (tbe.reqType == CHIRequestType:Load)) {
     DPRINTF(RubySlicc, "Read data %s\n", tbe.dataBlk);
-    sequencer.readCallback(tbe.addr, tbe.dataBlk, true);
+    coalescer.readCallback(tbe.addr, tbe.dataBlk, true);
 
   } else if (tbe.dataValid && ((tbe.reqType == CHIRequestType:Store) ||
                                (tbe.reqType == CHIRequestType:StoreLine))) {
     DPRINTF(RubySlicc, "Write before %s\n", tbe.dataBlk);
-    sequencer.writeCallback(tbe.addr, tbe.dataBlk, true);
+    coalescer.writeCallback(tbe.addr, tbe.dataBlk, true);
     DPRINTF(RubySlicc, "Write after %s\n", tbe.dataBlk);
     tbe.dataDirty := true;
 
@@ -3738,7 +3751,7 @@ action(Callback_WriteUnique, desc="") {
   assert((tbe.reqType == CHIRequestType:StoreLine) ||
          (tbe.reqType == CHIRequestType:Store));
   assert(tbe.dataValid == false);
-  sequencer.writeUniqueCallback(tbe.addr, tbe.dataBlk);
+  coalescer.writeCallback(tbe.addr,MachineType:L1Cache, tbe.dataBlk);
   DPRINTF(RubySlicc, "WriteUnique data %s\n", tbe.dataBlk);
   // set mask; note data is never considered valid
   assert(tbe.dataBlkValid.isEmpty());

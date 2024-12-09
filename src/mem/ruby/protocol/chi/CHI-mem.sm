@@ -173,6 +173,8 @@ machine(MachineType:Memory, "Memory controller interface") :
     MachineID requestor, desc="Requestor that originated this request";
     MachineID destination, desc="Where we are sending data";
     bool useDataSepResp, desc="Replies with DataSepResp instead of CompData";
+
+
   }
 
   structure(TBETable, external ="yes") {

@@ -668,6 +668,8 @@ void prepareRequest(TBE tbe, CHIRequestType type, CHIRequestMsg & out_msg) {
   out_msg.is_local_pf := false;
   out_msg.is_remote_pf := tbe.is_local_pf || tbe.is_remote_pf;
   out_msg.txnId := tbe.txnId;
+  out_msg.writeMask=tbe.writeMask;
+  out_msg.DataBlk=tbe.DataBlk;
 
   assert(tbe.txnId != static_cast(Addr, "value", -1));
 }

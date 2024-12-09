@@ -584,6 +584,7 @@ machine(MachineType:Cache, "Cache coherency protocol") :
     DataBlock DataBlk,  desc="data for the block";
     bool HWPrefetched,  default="false", desc="Set if this cache entry was prefetched";
     RequestorID requestor,  desc="First requestor to fill this block";
+    WriteMask writeMask, desc="written bytes masks"; 
   }
 
   // Directory entry
@@ -593,6 +594,7 @@ machine(MachineType:Cache, "Cache coherency protocol") :
     bool ownerExists, default="false", desc="true if owner exists";
     bool ownerIsExcl, default="false", desc="true if owner is UD or UC";
     State state,       desc="SLICC line state";
+    WriteMask writeMask, desc="written bytes masks"; 
   }
 
   // Helper class for tracking expected response and data messages
@@ -671,6 +673,9 @@ machine(MachineType:Cache, "Cache coherency protocol") :
     WriteMask atomic_op,    desc="Atomic Operation Wrapper";
     bool atomic_to_be_done, desc="We have yet to perform the atomic";
     bool atomic_to_be_wb,   desc="We are writebacking the atomic";
+
+    WriteMask writeMask, desc="written bytes masks"; 
+    DataBlock DataBlk , desc="written bytes masks"; 
 
     // NOTE: seqReq is a smart pointer pointing to original CPU request object
     // that triggers transactions associated with this TBE. seqReq carries some
