@@ -157,8 +157,8 @@ action(AllocateTBE_SeqRequest, desc="") {
       out_msg.atomic_op.clear();
       out_msg.atomic_op.orMask(in_msg.writeMask);
 
-  
-      
+
+
 
       if ((in_msg.Type == RubyRequestType:LD) ||
           (in_msg.Type == RubyRequestType:IFETCH)) {
@@ -2141,7 +2141,7 @@ action(Receive_ReqDataResp, desc="") {
   assert(is_valid(tbe));
   assert(tbe.expected_req_resp.hasExpected());
   peek(datInPort, CHIDataMsg) {
-   
+
     // Decrement pending
     if (tbe.expected_req_resp.receiveData(in_msg.type) == false) {
       error("Received unexpected message");
@@ -3422,6 +3422,7 @@ action(Finalize_UpdateDirectoryFromTBE, desc="") {
 action(Deallocate_CacheBlock, desc="") {
   assert(is_valid(cache_entry));
   cache.deallocate(address);
+  cache_entry.writeMask.clear();
   unset_cache_entry();
 }
 
@@ -3671,12 +3672,21 @@ action(Callback_Miss, desc="") {
 
   } else if (tbe.dataValid && (tbe.reqType == CHIRequestType:Load)) {
     DPRINTF(RubySlicc, "Read data %s\n", tbe.dataBlk);
+<<<<<<< Updated upstream
     coalescer.readCallback(tbe.addr, tbe.dataBlk, true);
+=======
+    coalesce.readCallback(tbe.addr, tbe.dataBlk, true);
+>>>>>>> Stashed changes
 
   } else if (tbe.dataValid && ((tbe.reqType == CHIRequestType:Store) ||
                                (tbe.reqType == CHIRequestType:StoreLine))) {
     DPRINTF(RubySlicc, "Write before %s\n", tbe.dataBlk);
+<<<<<<< Updated upstream
     coalescer.writeCallback(tbe.addr, tbe.dataBlk, true);
+=======
+    tbe.dataBlk.writeMask.orMask()
+    coalesce.writeCallback(tbe.addr, tbe.dataBlk, true);
+>>>>>>> Stashed changes
     DPRINTF(RubySlicc, "Write after %s\n", tbe.dataBlk);
     tbe.dataDirty := true;
 
@@ -3751,7 +3761,12 @@ action(Callback_WriteUnique, desc="") {
   assert((tbe.reqType == CHIRequestType:StoreLine) ||
          (tbe.reqType == CHIRequestType:Store));
   assert(tbe.dataValid == false);
+<<<<<<< Updated upstream
   coalescer.writeCallback(tbe.addr,MachineType:L1Cache, tbe.dataBlk);
+=======
+  tbe.dataBlk.orMask()
+  coalesce.writeUniqueCallback(tbe.addr, tbe.dataBlk);
+>>>>>>> Stashed changes
   DPRINTF(RubySlicc, "WriteUnique data %s\n", tbe.dataBlk);
   // set mask; note data is never considered valid
   assert(tbe.dataBlkValid.isEmpty());
@@ -3832,7 +3847,7 @@ action(Profile_Eviction, desc="") {
   }
   if (send_evictions) {
     DPRINTF(RubySlicc, "Sending invalidation for %#x to the sequencer\n", address);
-    sequencer.evictionCallback(address);
+    coalesce.evictionCallback(address);
   }
   if (use_prefetcher && is_valid(cache_entry)) {
     pfProxy.notifyPfEvict(address, cache_entry.HWPrefetched, cache_entry.requestor);
