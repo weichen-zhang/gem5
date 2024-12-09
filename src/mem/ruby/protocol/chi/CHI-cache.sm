@@ -40,6 +40,7 @@ machine(MachineType:Cache, "Cache coherency protocol") :
   // Sequencer to insert Load/Store requests.
   // May be null if this is not a L1 cache
   Sequencer * sequencer;
+  VIPERCoalescer* coalescer;
 
   // Cache for storing local lines.
   // NOTE: it is assumed that a cache tag and directory lookups and updates
